@@ -121,9 +121,8 @@ class SerperNewsTool(BaseTool):
         payload = json.dumps({
             "q": query,
             "tbs": "qdr:w",
-            "num": 20,
-            "gl": "in",  
-            "page": 2
+            "num": 15,
+            "gl": "in"
         })
         headers = {
             'X-API-KEY': os.getenv("SERPER_API_KEY"),

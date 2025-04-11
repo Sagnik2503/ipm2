@@ -1,6 +1,6 @@
 from crewai import Agent, LLM
 from dotenv import load_dotenv
-from crewai_tools import ScrapeWebsiteTool, SerperDevTool
+from crewai_tools import ScrapeWebsiteTool, SerperDevTool, SeleniumScrapingTool, FirecrawlCrawlWebsiteTool
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
 from tools.serper_news import SerperNewsTool
 from tools.word_count import WordCounterTool
@@ -41,7 +41,11 @@ market_analysis=Agent(
     verbose=True,
     llm=llm,
     # tools=[SerperDevTool()],
-    tools=[SerperNewsTool()]
+    tools=[SerperDevTool(
+                        search_url="https://google.serper.dev/news",
+                        n_results=10,
+                        gl="in")],
+    max_rpm=30
 )
 
 # 🕸 Web Scraper Agent (scrapes full content)
@@ -51,7 +55,9 @@ news_scraper = Agent(
     backstory="You are a web scraping expert who excels at extracting meaningful data from online articles, even on dynamic websites.",
     verbose=True,
     llm=llm,
-    tools=[ScrapeWebsiteTool(), WordCounterTool()]
+    tools=[FirecrawlCrawlWebsiteTool(api_key=os.getenv("FIRECRAWL_API_KEY"),
+                                     url="https://google.serper.dev/search")],
+    max_rpm=30
 )
 
 risk_assessment_agent = Agent(

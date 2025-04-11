@@ -37,12 +37,8 @@ class OrganicResult(BaseModel):
     snippet: Optional[str]
     position: Optional[int]
 
-
 class SerperSearchResults(BaseModel):
     organic: List[OrganicResult]
-    
-from pydantic import BaseModel, Field, HttpUrl
-from typing import List
 
 class NewsArticle(BaseModel):
     title: str = Field(..., description="Title of the news article.")

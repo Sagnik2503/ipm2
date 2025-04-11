@@ -47,6 +47,10 @@ market_analysis_task = Task(
 analyze_scraped_content_task = Task(
     description=(
     "You are tasked with producing a comprehensive, professional-grade **Market Intelligence Report** based on the full article content scraped from high-authority sources.\n\n"
+    
+    "⚠️ Due to token or character limits, you **may not be able to scrape all articles at once**. "
+        "In such cases, you must scrape them **in batches**.\n"
+        "After scraping a batch, **continue to scrape the remaining articles automatically**, without needing human input.\n\n"
 
     "You are given a list of recent news articles:\n"
         "{market_analysis_task}\n\n"
@@ -54,7 +58,7 @@ analyze_scraped_content_task = Task(
     "Your report must synthesize this content into an insightful, strategic deliverable that informs leadership decisions and project planning.\n\n"
 
     "### 🔍 Instructions:\n"
-    "- Carefully analyze the full content of each article, not just summaries or titles.\n"
+    "- Carefully scrape the full content of each website url, not just summaries or titles.\n"
     "- Extract key trends, risks, and opportunities discussed across all sources.\n"
     "- Where available, use direct quotes, data points, or named technologies/competitors from the articles.\n"
     "- Explicitly cite which article each insight came from using markdown links (see Sources section).\n\n"
@@ -110,24 +114,175 @@ analyze_scraped_content_task = Task(
     "- Write in formal, professional, C-suite-friendly language.\n"
     "- Ensure the entire output is easily copy-pasteable into a markdown report generator or previewer.\n\n"
 
+
+    "### FORMAT INSTRUCTIONS:\n ----->  THIS IS EXTREMELY IMPORTANT!!!\n" 
+    "To use the scraper:\n"
+    "Thought: I need to extract full text from this article.\n"
+    "Action: Read website content\n"
+    "Action Input: {\"website_url\": \"https://example.com\"}\n\n"
+    "To finish:\n"
+    "Thought: I now can give a great answer\n"
+    "Final Answer: [a list of scraped article content or structured summary]\n\n"
+    "❗Always include 'Action:' or 'Final Answer:', or the system will fail."
+    
+    
     "✅ Final output: A well-formatted, insight-rich **markdown report** that synthesizes all scraped content into a deliverable worthy of executive review and strategic planning."
+
 )
 ,
     expected_output=(
-        "A comprehensive, strategic market analysis report in markdown format, "
-        "with no fewer than 1500 words, verified using the Word Count Tool."
+        "A comprehensive, strategic market analysis report in markdown format."
     ),
     agent=news_scraper,
     context=[market_analysis_task],
     output_file="output/analysis_report.md",
-    human_input=True
+    # human_input=True
 )
 project_risk_assessment_task = Task(
     description=(
-        "You are responsible for conducting a comprehensive risk assessment of a digital platform initiative.\n\n"
-        "You will receive a detailed project description containing architectural decisions, integration points, tooling dependencies, and development methodologies.\n\n"
-        "Your analysis should be structured and thorough, covering all major risk categories. For each risk, assess its likelihood, impact, and propose mitigation strategies.\n\n"
-        "Use the following framework:\n\n"
+        # "You are responsible for conducting a comprehensive risk assessment of the Project report provided to you in the knowledge directory.\n\n"
+        # "You have the detailed project description containing architectural decisions, integration points, tooling dependencies, and development methodologies.\n\n"
+        # "Your analysis should be structured and thorough, covering all major risk categories. For each risk, assess its likelihood, impact, and propose mitigation strategies.\n\n"
+        # "Use the following framework:\n\n"
+        # "**1. Strategic Risks**\n"
+        # "- Misalignment with business goals\n"
+        # "- Scope creep or changing stakeholder priorities\n\n"
+        # "**2. Technical Risks**\n"
+        # "- API reliability or third-party service dependency (e.g., Stripe, Twilio)\n"
+        # "- Scalability and availability risks in cloud-native deployments\n"
+        # "- Performance under load, latency, and failure tolerance\n\n"
+        # "**3. Operational Risks**\n"
+        # "- Delayed procurement of critical tools (e.g., Figma, Datadog)\n"
+        # "- Skill shortages or bandwidth constraints in cross-functional teams\n"
+        # "- QA and compliance process delays\n\n"
+        # "**4. Resource & Financial Risks**\n"
+        # "- Overrun of $110K budget cap\n"
+        # "- Underestimation of resource requirements for CI/CD, DevOps, or UX testing\n\n"
+        # "**5. Organizational & Compliance Risks**\n"
+        # "- Lack of stakeholder involvement in key agile ceremonies\n"
+        # "- Changes to external regulations (e.g., GDPR, WCAG)\n\n"
+        # "**6. Assumptions & Constraints Validation**\n"
+        # "- Identify if any listed assumptions could break\n"
+        # "- Reevaluate the impact of stated constraints\n\n"
+        # "🔚 Your final output must be a full Risk Register with:\n"
+        # "- Risk Title\n"
+        # "- Risk Category\n"
+        # "-Likelihood (Low / Medium / High)\n"
+        # "- Impact (Low / Medium / High)\n"
+        # "- Mitigation Strategy\n"
+        # "- Residual Risk Level\n"
+        # "- Owner / Responsible Party (optional)\n"
+        
+#         """You are responsible for conducting a comprehensive risk assessment of the uploaded Project Report. 
+#     The report contains detailed project descriptions, including architectural decisions, integration points, 
+#     tooling dependencies, and development methodologies. Your analysis must be structured and thorough, 
+#     covering all major risk categories using the provided evaluation framework.
+
+#     Framework for Analysis:
+#     1. Strategic Risks:
+#        - Misalignment with business goals.
+#        - Scope creep or changing stakeholder priorities.
+  
+#   2. Technical Risks:
+#        - API reliability or third-party service dependency (e.g., Stripe, Twilio).
+#        - Scalability, availability, performance under load, latency, and failure tolerance risks in cloud-native deployments.
+
+#     3. Operational Risks:
+#        - Delayed procurement of critical tools (e.g., Figma, Datadog).
+#        - Skill shortages or bandwidth constraints in cross-functional teams.
+#        - QA and compliance process delays.
+
+#     4. Resource & Financial Risks:
+#        - Overrun of the $110K budget cap.
+#        - Underestimation of resource requirements for CI/CD, DevOps, or UX testing.
+
+#     5. Organizational & Compliance Risks:
+#        - Lack of stakeholder involvement in key agile ceremonies.
+#        - Changes to external regulations (e.g., GDPR, WCAG).
+
+#     6. Assumptions & Constraints Validation:
+#        - Identify risks tied to assumptions that could break.
+#        - Reevaluate the impact of stated constraints.
+
+#     7. Time and Budget Risks:
+#        - Assess potential time delays in the project schedule and their cascading impact on deliverables.
+#        - Evaluate risks related to exceeding the allocated project budget and implications for resource planning.
+
+#     Evaluation Criteria:
+#     - Risk Title
+#     - Risk Category
+#     - Likelihood (Low / Medium / High)
+#     - Impact (Low / Medium / High)
+#     - Mitigation Strategy
+#     - Residual Risk Level (Low / Medium / High)
+#     - Potential Time Delay (if applicable)
+#     - Potential Budget Overrun (if applicable)
+#     - Owner / Responsible Party (Optional)
+
+#     Risk Scoring System:
+#     - Low Risk: 0-3
+#     - Medium Risk: 4-6
+#     - High/Critical Risk: 7-10
+    
+    
+# #     take the context fromt"""
+#      """Conduct a comprehensive risk assessment **strictly grounded** in two sources:
+#         1. The official Project Report (provided as a PDFKnowledgeSource) in the knowledge directory.
+#         2. The previously generated market analysis findings
+
+#         You must not introduce any information not directly supported or implied in these two sources.
+#         Do not hallucinate or infer risks from general knowledge.
+
+#         Your analysis must follow this structured framework:
+
+#         1. Strategic Risks
+#         - Misalignment with business goals
+#         - Scope creep or shifting stakeholder priorities
+
+#         2. Technical Risks
+#         - Dependency on external APIs or services (e.g., Stripe, Twilio)
+#         - Scalability, uptime, and cloud-native system reliability
+#         - Performance under load, fault tolerance, and latency challenges
+
+#         3. Operational Risks
+#         - Procurement delays for key tools (e.g., Figma, Datadog)
+#         - Gaps in team skillsets or availability across cross-functional squads
+#         - QA bottlenecks or compliance hold-ups
+
+#         4. Resource & Financial Risks
+#         - Breaching the $110K budget cap
+#         - Underestimation of resourcing for CI/CD, security, or UX testing
+
+#         5. Organizational & Compliance Risks
+#         - Lack of stakeholder participation in agile ceremonies
+#         - Impact of changes in external regulations (GDPR, WCAG, etc.)
+
+#         6. Assumptions & Constraints Validation
+#         - Identify any assumptions that may no longer hold
+#         - Reevaluate the effect of stated budget/timeline constraints
+
+#         🚫 Avoid hypothetical risks. Ground every point in content from the project documentation or market research.
+
+         "You are responsible for conducting a comprehensive risk assessment of a digital platform initiative.\n\n"
+        "You will receive detailed input documents, including:\n"
+        "- A project report outlining architectural decisions, integration points, tooling dependencies, and development methodologies.\n"
+        "- A market analysis containing industry-specific risks and trends.\n"
+        "- Content scraped from relevant websites to understand the competitive landscape and user expectations.\n\n"
+        "### **Guardrails**\n"
+        "1. **Strict Input-Driven Analysis**:\n"
+        "   - Your assessment must be based **strictly and exclusively** on the information in the input documents.\n"
+        "   - Do **not** introduce risks, insights, or assumptions that are not explicitly supported by the provided data.\n"
+        "   - If a category or framework point lacks input data, explicitly state that it could not be assessed due to insufficient information.\n\n"
+        "2. **No Hallucinations**:\n"
+        "   - Avoid any generic, templated, or fabricated risks or conclusions.\n"
+        "   - The final report must align directly with the evidence and context provided in the input documents.\n\n"
+        "3. **Traceable and Documented Justification**:\n"
+        "   - For every risk identified, include a note about which document (project report, market analysis, or scraped content) provided the supporting evidence.\n"
+        "   - Example: `This risk was identified in the project report, Section 2: Tooling Dependencies.`\n\n"
+        "4. **Category-Based Completeness Check**:\n"
+        "   - If any category from the provided framework (e.g., Strategic, Technical, Operational, etc.) has no identified risks due to lack of input data, include a note stating:\n"
+        "     `No risks identified in this category due to insufficient input data.`\n\n"
+        "### **Risk Analysis Framework**\n"
         "**1. Strategic Risks**\n"
         "- Misalignment with business goals\n"
         "- Scope creep or changing stakeholder priorities\n\n"
@@ -148,20 +303,44 @@ project_risk_assessment_task = Task(
         "**6. Assumptions & Constraints Validation**\n"
         "- Identify if any listed assumptions could break\n"
         "- Reevaluate the impact of stated constraints\n\n"
+        "**Risk Scoring Formula**\n"
+        "To prioritize risks systematically, use the following formula to calculate the risk score:\n\n"
+        "**Risk Score = Likelihood Weight × Impact Weight**\n\n"
+        "- Likelihood Weight: Assign values based on the probability of occurrence:\n"
+        "  - Low = 1\n"
+        "  - Medium = 2\n"
+        "  - High = 3\n"
+        "- Impact Weight: Assign values based on the severity of the impact:\n"
+        "  - Low = 1\n"
+        "  - Medium = 2\n"
+        "  - High = 3\n\n"
+        "**Risk Thresholds**:\n"
+        "- Low Risk: Score ≤ 2\n"
+        "- Medium Risk: 3 ≤ Score ≤ 6\n"
+        "- High Risk: Score ≥ 7\n\n"
         "🔚 Your final output must be a full Risk Register with:\n"
         "- Risk Title\n"
         "- Risk Category\n"
-        "-Likelihood (Low / Medium / High)\n"
+        "- Likelihood (Low / Medium / High)\n"
         "- Impact (Low / Medium / High)\n"
+        "- Risk Score\n"
         "- Mitigation Strategy\n"
         "- Residual Risk Level\n"
         "- Owner / Responsible Party (optional)\n"
+        "- Supporting Document and Reference (mandatory)\n\n"
+        "**Important:** Any failure to adhere to these guardrails will result in an invalid report."
     ),
     expected_output=(
-        "A full risk register in markdown table format or JSON, following the framework above. "
-        "Each risk entry should include title, category, likelihood, impact, mitigation, and residual risk."
+               "A full risk register in markdown table format or JSON, following the framework above. "
+        "Each risk entry must include title, category, likelihood, impact, risk score, mitigation, residual risk, and supporting document references. "
+        "The report must be based strictly on the input documents provided."
+
+
     ),
-    context=[document_query_task, analyze_scraped_content_task],
+    context=[analyze_scraped_content_task],
     output_file="output/risk_register.md",
-    agent=risk_assessment_agent,
+    human_input=True,
+    agent=risk_assessment_agent
 )
+
+
