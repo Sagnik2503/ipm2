@@ -1,1 +1,31 @@
-{"news":[]}
+{
+    "news": [
+        {
+            "title": "Unpacking the Challenges Shaping Enterprise IT in 2025",
+            "link": "https://digitalisationworld.com/blogs/58242/unpacking-the-challenges-shaping-enterprise-it-in-2025",
+            "snippet": "Nearly 98% of IT leaders report struggles with scaling GenAI workloads from development to production, a challenge compounded by the growing need to modernise ...",
+            "date": "null",
+            "source": "digitalisationworld.com",
+            "imageUrl": "null",
+            "position": 1
+        },
+        {
+            "title": "Enterprise Application Development Challenges: Strategies for 2025",
+            "link": "https://www.netguru.com/blog/enterprise-app-development-challenges",
+            "snippet": "Issues like frequent business requirement changes, robust security demands, and efficient data storage complicate the process.",
+            "date": "null",
+            "source": "netguru.com",
+            "imageUrl": "null",
+            "position": 2
+        },
+        {
+            "title": "PostgreSQL Operator Joins CNCF Sandbox Stage - The New Stack",
+            "link": "https://thenewstack.io/postgresql-operator-cloudnativepg-hits-the-cncf-sandbox/",
+            "snippet": "EnterpriseDB's CloudNativePG, a Kubernetes operator for PostgreSQL, has been accepted into the CNCF sandbox, simplifying database management within Kubernetes ...",
+            "date": "null",
+            "source": "thenewstack.io",
+            "imageUrl": "null",
+            "position": 3
+        }
+    ]
+}

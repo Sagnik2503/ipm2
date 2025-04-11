@@ -55,8 +55,9 @@ news_scraper = Agent(
     backstory="You are a web scraping expert who excels at extracting meaningful data from online articles, even on dynamic websites.",
     verbose=True,
     llm=llm,
-    tools=[FirecrawlCrawlWebsiteTool(api_key=os.getenv("FIRECRAWL_API_KEY"),
-                                     url="https://google.serper.dev/search")],
+    # tools=[FirecrawlCrawlWebsiteTool(api_key=os.getenv("FIRECRAWL_API_KEY"),
+    #                                  url="https://google.serper.dev/search")],
+    tools=[ScrapeWebsiteTool()],
     max_rpm=30
 )
 
@@ -78,4 +79,21 @@ risk_assessment_agent = Agent(
                 }
             },
     knowledge_sources=[knowledge]
+)
+
+# Final Integration Agent
+final_integration_agent = Agent(
+    role="Strategic Insights Synthesizer",
+    goal=(
+        "Integrate insights from various analyses, including document queries, market trends, scraped content, "
+        "and risk assessments, to produce a comprehensive, actionable report tailored for executive decision-making."
+    ),
+    backstory=(
+        "You are a highly skilled strategist specializing in synthesizing complex datasets into clear, "
+        "insightful deliverables. With a knack for identifying patterns and aligning recommendations with strategic goals, "
+        "you excel at delivering reports that empower stakeholders to make informed decisions."
+    ),
+    verbose=True,
+    llm=llm,  # Replace with your LLM configuration, e.g., OpenAI, Anthropic, etc.
+    tools=[WordCounterTool()],  # Add any necessary tools, if needed
 )
