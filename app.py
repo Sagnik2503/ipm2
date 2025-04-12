@@ -6,7 +6,7 @@ from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
 from tools.testtool import TavilySearchTool, TavilyScrapeTool
 from tools.word_count import WordCounterTool
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List
 from models import Report
 from dotenv import load_dotenv
 load_dotenv()
@@ -55,6 +55,7 @@ def setup_crew(pdf_name):
     #agents below
     # Document Info Agent
     document_info_agent = Agent(
+    cache=False,
     role="Document Analyst",
     goal=(
         "Analyze documents thoroughly to extract critical information in alignment with the Report model schema. "
@@ -79,6 +80,7 @@ def setup_crew(pdf_name):
 )
     # Market Analysis Agent
     market_analysis = Agent(
+    cache=False,
     role="Market Analyst",
     goal="Analyze the latest market trends and news relevant to the project's description by gathering insights from various sources and identifying key trends and risks.",
     backstory=(
@@ -93,6 +95,7 @@ def setup_crew(pdf_name):
 # 🕸 Web Scraper Agent (scrapes full content)
     
     news_scraper = Agent(
+    cache=False,
     role="Web Content Scraper",
     goal="Scrape and summarize full content from provided news URLs using the Tavily Scrape Tool.",
     backstory=(
@@ -105,6 +108,7 @@ def setup_crew(pdf_name):
     max_rpm=30
 )
     risk_assessment_agent = Agent(
+    cache=False,
     role="Enterprise Risk Analyst",
     goal="Identify, categorize, and evaluate risks for large-scale digital platform projects to help stakeholders plan mitigations effectively.",
     backstory=(
@@ -126,6 +130,7 @@ def setup_crew(pdf_name):
      
 # Final Integration Agent
     final_integration_agent = Agent(
+    cache=False,
     role="Strategic Insights Synthesizer",
     goal=(
         "Integrate insights from various analyses, including document queries, market trends, scraped content, "
@@ -424,6 +429,7 @@ def setup_crew(pdf_name):
 # Main crew setup
 
     crew = Crew(
+        cache=False,
         agents=[
             document_info_agent,
             market_analysis,
@@ -481,10 +487,7 @@ def display_markdown_report(file_path, title):
         with open(file_path, "r") as f:
             content = f.read()
             st.markdown(f"{title}")
-            st.markdown(
-                f'<div style="height: 1000px; overflow-y: scroll; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">{content}</div>',
-                unsafe_allow_html=True
-            )
+            st.markdown(content)
     else:
         st.warning(f"{title} not found.")
         

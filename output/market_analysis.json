@@ -1,1 +1,15 @@
-{"query":"enterprise platform development React GraphQL PostgreSQL Kubernetes 2024","urls":["https://dev.to/thatcloudexpert/deploying-postgresql-on-kubernetes-2024-guide-4hb3","https://suaybsimsek58.medium.com/react-spring-boot-graphql-fullstack-microservice-application-on-kubernetes-eb227e1a748b","https://github.com/graphile/starter","https://github.com/ensarbooks/guides/blob/main/Building+a+Full-Stack+Application+with+React,+NestJS,+GraphQL+&+PostgreSQL+(Step-by-Step+Guide).md","https://graphql.org/conf/2024/schedule/486758a780cbd512a88c6def8f9ba36a/?name=Keynote:+Apollo's+Journey+with+GraphQL:+Transforming+Enterprise+APIs+for+the+Future","https://www.enterprisedb.com/blog/bridging-postgres-and-kubernetes","https://www.geeksforgeeks.org/building-graphql-apis-with-postgresql/","https://medium.com/@j.jameslee02102/building-a-full-stack-mongodb-postgresql-express-react-node-mern-pern-app-with-ci-cd-pipeline-5cb3d0a733e8","https://www.cncf.io/blog/2023/09/29/recommended-architectures-for-postgresql-in-kubernetes/","https://blog.stonegarden.dev/articles/2024/10/k8s-postgres/"]}
+{
+    "query": "enterprise platform development React GraphQL PostgreSQL",
+    "urls": [
+        "https://blog.logrocket.com/create-graphql-api-react-phoenix-2/",
+        "https://github.com/graphile/starter",
+        "https://hasura.io/blog/build-react-static-sites-using-hasura-graphql-on-postgres",
+        "https://blog.logrocket.com/create-a-react-native-app-with-postgresql-and-graphql-part-1/",
+        "https://github.com/adrach/starter-postgres-express-react",
+        "https://blog.back4app.com/how-to-deploy-a-react-app-with-postgresql/",
+        "https://github.com/the-road-to-graphql/fullstack-apollo-express-postgresql-boilerplate",
+        "https://www.heady.io/blog/part-1-building-full-stack-web-app-with-postgraphile-and-react-server-side",
+        "https://github.com/ensarbooks/guides/blob/main/Building+a+Full-Stack+Application+with+React,+NestJS,+GraphQL+&+PostgreSQL+(Step-by-Step+Guide).md",
+        "https://justcreateapp.com/how-to-build-full-stack-app-with-node-js-react-and-graphql"
+    ]
+}
