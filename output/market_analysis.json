@@ -1,15 +1,1 @@
-{
-    "query": "enterprise digital platform development using React, Redux, GraphQL, PostgreSQL, Stripe, Twilio, Segment, agile methodologies, cloud-native",
-    "urls": [
-        "https://www.pluralsight.com/courses/react-native-redux-graphql-building-apps",
-        "https://github.com/skays-dev/Complete-React-Developer-in-2023-w-Redux-Hooks-GraphQL-",
-        "https://medium.com/magnetis-backstage/react-native-redux-and-graphql-3b93af79d4ce",
-        "https://medium.com/react-weekly/implementing-graphql-in-your-redux-app-dad7acf39e1b",
-        "https://github.com/PCianes/FullStackOpen",
-        "https://github.com/phondani0/e_store",
-        "https://github.com/jtbrennan/Full-Stack-Open",
-        "https://dev.to/bnevilleoneill/how-to-create-a-react-native-app-with-postgresql-and-graphql-part-2-1i41",
-        "https://medium.com/nerd-for-tech/how-to-use-graphql-with-redux-50ad20ec051f",
-        "https://github.com/Souvikparua/COMPLETE-Fullstack-ecommerce-Responsive-MERN-App"
-    ]
-}
+{"query":"enterprise platform development using React, GraphQL, PostgreSQL, Kubernetes, and agile methodologies","urls":["https://www.analyticsinsight.net/tech-news/agile-and-graphql-a-new-era-in-software-development","https://content.mkarjun.com/the-future-of-platform-engineering-2025","https://techquarter.io/react-development-for-enterprise-applications/","https://suaybsimsek58.medium.com/react-spring-boot-graphql-fullstack-microservice-application-on-kubernetes-eb227e1a748b","https://ieeexplore.ieee.org/document/10162465","https://medium.com/@nikhilkumar.net/full-stack-react-graphql-mongodb-apollo-building-an-app-cb1eb647c73a","https://github.com/ensarbooks/guides/blob/main/Building+a+Full-Stack+Application+with+React,+NestJS,+GraphQL+&+PostgreSQL+(Step-by-Step+Guide).md","https://codezup.com/graphql-and-react-a-complete-guide-to-building-a-real-time-application/","https://github.com/the-road-to-graphql/fullstack-apollo-express-postgresql-boilerplate","https://medium.com/digital-mckinsey/toward-end-to-end-real-time-event-driven-architectures-using-graphql-with-aws-appsync-a588ef7b8c90"]}

@@ -10,19 +10,41 @@ class NewsSearchResults(BaseModel):
     urls: List[str] = Field(..., description="List of URLs retrieved by the search tool.")
 
 
-# Document Query Task
-document_query_task=Task(
+# # Document Query Task
+# document_query_task=Task(
+#     description=(
+#         "Your task is to go through the provided document and extract relevant information "
+#         "according to the Report model schema."
+#     ),
+#     expected_output=(
+#         "A structured JSON data containing the project details according to the Report model schema."
+#     ),
+#     output_pydantic=Report,
+#     agent=document_info_agent,
+#     output_file="output/project_overview.json"
+# )
+document_query_task = Task(
     description=(
-        "Your task is to go through the provided document and extract relevant information "
-        "according to the Report model schema."
+        "Your task is to analyze the provided document and extract all the relevant information "
+        "based on the Report model schema. Focus particularly on accurately extracting team members, their roles, "
+        "and responsibilities from the 'Project Team & Responsibilities' section. Ensure that each extracted field "
+        "is comprehensive and adheres to the schema."
     ),
     expected_output=(
-        "A structured JSON data containing the project details according to the Report model schema."
+        "A structured JSON file with all the details extracted from the document, formatted precisely according to "
+        "the Report model schema. Pay special attention to the 'team_members' and 'responsibilities' fields: "
+        "'team_members' should be formatted as 'Name (Role)', and 'responsibilities' should list each name with "
+        "their detailed responsibilities."
+        "Contain limitations, future_scope, dependencies, assumptions, constraints operational_thresholds" "communication_protocols" "tools_used" "change_management" "approval_matrix"
+        "DO not miss any section that is mentioned in the Report model schema."
+        "the budget should contain both the total budget section wise and the budget cap"
+        
     ),
     output_pydantic=Report,
     agent=document_info_agent,
     output_file="output/project_overview.json"
 )
+
 
 
 
@@ -101,7 +123,7 @@ analyze_scraped_content_task = Task(
         "Input: List of URLs retrieved from the previous task.\n"
         "Output: A markdown-formatted market analysis report."
     ),
-    expected_output="A markdown-formatted market analysis report with the specified structure.",
+    expected_output="A markdown-formatted market analysis report with the specified structure. also contain the links that you have scraped",
     agent=news_scraper,
     context=[market_analysis_task],
     output_file="output/analysis_report.md"
@@ -369,9 +391,9 @@ final_integration_task = Task(
         "Each section should be EXTREMLY ELABORATE and have proper well defined and well written paragraphs."
         "it should have a table of contents."
         "it should have a risk register table that contains the risks and the mitigation strategies with the respective goal and everything mentioned in the {description}."
-        "keep in mind that the report should be at least 1500 words."
+        "**keep in mind that the report should be at least 1500 words.**"
         "it should have all the reference links of the scraped websites"
-        "Use the wordcount tool to ensure the report is at least 1500 words."
+        "**Use the Word Count Tool to ensure the report is at least 1500 words.**"
         "Example structure: \n"
         
         "### ✅ Required Structure:\n"

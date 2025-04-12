@@ -17,21 +17,50 @@ llm = LLM(
 )
 knowledge=PDFKnowledgeSource(file_paths="Apollo Project Report.pdf")
 
-document_info_agent=Agent(
+# document_info_agent=Agent(
+#     role="Document Analyst",
+#     goal="Analyze documents provided in the knowledge directory, extract critical information according to the pydantic output mentioned in the task, and deliver actionable insights in a clear and comprehensive report.You will be responsible for identifying key sections, and ensuring that the information is presented in a format that is easy to understand and utilize.",
+#     backstory="You are a highly skilled professional in document analysis, specializing in extracting valuable insights from complex materials such as PDFs, reports, and contracts. You excel at synthesizing findings and presenting them in a concise, actionable format.",
+#     verbose=True,
+#     llm=llm,
+#     embedder={
+#                 "provider": "google",
+#                 "config": {
+#                     "model": "models/text-embedding-004",
+#                     "api_key": GEMINI_API_KEY,
+#                 }
+#             },
+#     knowledge_sources=[knowledge]
+# )
+
+document_info_agent = Agent(
     role="Document Analyst",
-    goal="Analyze documents provided in the knwledge directory, extract critical information, and deliver actionable insights in a clear and comprehensive report.",
-    backstory="You are a highly skilled professional in document analysis, specializing in extracting valuable insights from complex materials such as PDFs, reports, and contracts. You excel at synthesizing findings and presenting them in a concise, actionable format.",
+    goal=(
+        "Analyze documents thoroughly to extract critical information in alignment with the Report model schema. "
+        "Focus on identifying key sections like 'Project Team & Responsibilities', ensuring detailed and structured "
+        "extraction of all relevant data, including names, roles, and responsibilities."
+    ),
+    backstory=(
+        "You are an expert in document analysis, trained to parse and synthesize detailed data from complex materials. "
+        "You excel at extracting structured information and delivering outputs that match specific data models, ensuring "
+        "no critical details are overlooked."
+    ),
     verbose=True,
     llm=llm,
     embedder={
-                "provider": "google",
-                "config": {
-                    "model": "models/text-embedding-004",
-                    "api_key": GEMINI_API_KEY,
-                }
-            },
+        "provider": "google",
+        "config": {
+            "model": "models/text-embedding-004",
+            "api_key": GEMINI_API_KEY,
+        }
+    },
     knowledge_sources=[knowledge]
 )
+
+
+
+
+
 
 # Market Analysis Agent
 market_analysis = Agent(
