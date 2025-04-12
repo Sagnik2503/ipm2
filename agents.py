@@ -1,8 +1,7 @@
 from crewai import Agent, LLM
 from dotenv import load_dotenv
-from crewai_tools import ScrapeWebsiteTool, SerperDevTool, SeleniumScrapingTool, FirecrawlCrawlWebsiteTool
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
-from tools.serper_news import SerperNewsTool
+from tools.testtool import TavilySearchTool, TavilyScrapeTool
 from tools.word_count import WordCounterTool
 load_dotenv()
 import os
@@ -34,30 +33,31 @@ document_info_agent=Agent(
     knowledge_sources=[knowledge]
 )
 
-market_analysis=Agent(
+# Market Analysis Agent
+market_analysis = Agent(
     role="Market Analyst",
     goal="Analyze the latest market trends and news relevant to the project's description by gathering insights from various sources and identifying key trends and risks.",
-    backstory="You are a seasoned market analyst with extensive experience in identifying industry trends, competitive landscapes, and emerging market opportunities. You specialize in leveraging real-time news data to provide informed strategic recommendations.",
+    backstory=(
+        "You are a seasoned market analyst with extensive experience in identifying "
+        "industry trends, competitive landscapes, and emerging market opportunities. "
+        "You specialize in leveraging real-time news data to provide informed strategic recommendations."
+    ),
     verbose=True,
-    llm=llm,
-    # tools=[SerperDevTool()],
-    tools=[SerperDevTool(
-                        search_url="https://google.serper.dev/news",
-                        n_results=10,
-                        gl="in")],
+    tools=[TavilySearchTool()],
     max_rpm=30
 )
 
 # 🕸 Web Scraper Agent (scrapes full content)
 news_scraper = Agent(
     role="Web Content Scraper",
-    goal="Scrape and summarize full content from provided news URLs using ScrapeWebsiteTool provided.",
-    backstory="You are a web scraping expert who excels at extracting meaningful data from online articles, even on dynamic websites.",
+    goal="Scrape and summarize full content from provided news URLs using the Tavily Scrape Tool.",
+    backstory=(
+        "You are a web scraping expert who excels at extracting meaningful data from "
+        "online articles, even on dynamic websites. You specialize in turning raw data "
+        "into actionable insights for strategic decision-making."
+    ),
     verbose=True,
-    llm=llm,
-    # tools=[FirecrawlCrawlWebsiteTool(api_key=os.getenv("FIRECRAWL_API_KEY"),
-    #                                  url="https://google.serper.dev/search")],
-    tools=[ScrapeWebsiteTool()],
+    tools=[TavilyScrapeTool()],
     max_rpm=30
 )
 

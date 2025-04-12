@@ -1,6 +1,14 @@
 from crewai import Task
-from models import Report,OrganicResult,SerperSearchResults, NewsSearchResults
+from models import Report,OrganicResult,SerperSearchResults
+from pydantic import BaseModel, Field
+from typing import List, Dict
 from agents import news_scraper, market_analysis, document_info_agent, risk_assessment_agent
+
+class NewsSearchResults(BaseModel):
+    """Schema for the output of market analysis task."""
+    query: str = Field(..., description="Search query used to find the news articles.")
+    urls: List[str] = Field(..., description="List of URLs retrieved by the search tool.")
+
 
 # Document Query Task
 document_query_task=Task(
@@ -18,25 +26,20 @@ document_query_task=Task(
 
 
 
-# Market Analysis Task
 market_analysis_task = Task(
     description=(
-    "You are a market analyst performing research on a specific project.\n\n"
+        "You are a market analyst performing research on a specific project.\n\n"
         "Your job is to analyze the latest market news, risks, and opportunities relevant to the project summary provided below.\n"
-        "To do this, you **must use the 'Serper News Extraction Tool'**, which retrieves the most recent news articles.\n\n"
+        "To do this, you must use the 'TavilySearchTool', which retrieves the most recent news articles.\n\n"
         "Instructions:\n"
-        "1. Carefully read the project details below.\n"
-        "2. Convert the project description into a **concise, relevant search query**.\n"
-        "3. Call the `Serper News Extraction Tool` using the query. Example input: `query='AI startup in healthcare'`.\n"
-        "4. Use the returned news articles to identify key trends, competitor activity, and potential risks.\n"
-        "5. Return the final result as a structured JSON following the `NewsSearchResults` model.\n\n"
-        "---\n\n"
-        "📄 Project Summary:\n"
+        "1. Convert the project description into a concise, relevant search query.\n"
+        "2. Call the `TavilySearchTool` using the query. Example input: `query='AI startup in healthcare'`.\n"
+        "3. Use the returned news articles to identify key trends, competitor activity, and potential risks.\n"
+        "4. Return the final result as structured JSON with the search query and list of URLs.\n\n"
+        "Project Summary:\n"
         "{document_query_task}"
     ),
-    expected_output=(
-        "A structured JSON data containing the TOOL OUTPUT according to the SerperSearchResults model schema."
-    ),
+    expected_output="A structured JSON containing the search query and URLs for further analysis.",
     output_pydantic=NewsSearchResults,
     agent=market_analysis,
     context=[document_query_task],
@@ -44,100 +47,71 @@ market_analysis_task = Task(
 )
 # You can create one like the others
 
+# class ArticleContent(BaseModel):
+#     """Schema for the output of analyze scraped content task."""
+#     url: str = Field(..., description="URL of the article.")
+#     title: str = Field(..., description="Title of the article.")
+#     snippet: str = Field(..., description="Short snippet or content summary of the article.")
+#     raw_content: str = Field(..., description="Full raw content of the article.")
+
+# class MarketAnalysisReport(BaseModel):
+#     """Schema for the report generated from scraped content."""
+#     executive_summary: str = Field(..., description="High-level summary for decision-makers.")
+#     market_trends: List[Dict[str, str]] = Field(..., description="Key market trends identified.")
+#     risks: List[Dict[str, str]] = Field(..., description="Risks discussed in the articles.")
+#     opportunities: List[Dict[str, str]] = Field(..., description="Opportunities inferred from the articles.")
+#     competitors: List[Dict[str, str]] = Field(..., description="Competitors mentioned in the articles.")
+#     actionable_recommendations: List[str] = Field(..., description="Strategic recommendations.")
+#     sources: List[str] = Field(..., description="Sources used to generate the report.")
+
+
 analyze_scraped_content_task = Task(
     description=(
-    "You are tasked with producing a comprehensive, professional-grade **Market Intelligence Report** based on the full article content scraped from high-authority sources.\n\n"
-    "use the Read Website Content tool to scrape the full content of each website url.\n\n"
-    "⚠️ Due to token or character limits, you **may not be able to scrape all articles at once**. "
-        "In such cases, you must scrape them **in batches**.\n"
-        "After scraping a batch, **continue to scrape the remaining articles automatically**, without needing human input.\n\n"
-
-    "You are given a list of recent news articles:\n"
-        "{market_analysis_task}\n\n"
-
-    "Your report must synthesize this content into an insightful, strategic deliverable that informs leadership decisions and project planning.\n\n"
-
-    "### 🔍 Instructions:\n"
-    "- Carefully scrape the full content of each website url, not just summaries or titles.\n"
-    "- Extract key trends, risks, and opportunities discussed across all sources.\n"
-    "- Where available, use direct quotes, data points, or named technologies/competitors from the articles.\n"
-    "- Explicitly cite which article each insight came from using markdown links (see Sources section).\n\n"
-
-    "### 📋 Required Structure of the Report:\n\n"
-
-    "**1. Executive Summary**\n"
-    "- A high-level overview summarizing key trends, opportunities, threats, and takeaways.\n"
-    "- Make it actionable and tailored for decision-makers.\n\n"
-
-    "**2. Market Trends**\n"
-    "- List and explain 5–7 major market trends that are shaping the digital transformation or enterprise platform landscape.\n"
-    "- Include trends like AI automation, cloud-native adoption, DevSecOps, low-code/no-code, IoT, and quantum computing if present in the source content.\n"
-    "- For each trend, provide a short explanation and real-world example if available.\n\n"
-
-    "**3. Risk Landscape**\n"
-    "- Identify and describe 5–10 relevant risks discussed or implied in the articles.\n"
-    "- Categorize risks as Technical, Strategic, Regulatory, Operational, or Financial.\n"
-    "- Include mitigation suggestions where possible.\n\n"
-
-    "**4. Opportunities**\n"
-    "- Identify 3–5 growth or innovation opportunities that Apollo can explore.\n"
-    "- This may include emerging technologies, underserved markets, or integration pathways (e.g., IoT or low-code partnerships).\n"
-    "- Each opportunity should include justification from the scraped sources.\n\n"
-
-    "**5. Competitive Landscape**\n"
-    "- List notable competitors mentioned in the articles (e.g., Microsoft Power Platform, ServiceNow, Salesforce, Mendix).\n"
-    "- Include a brief note about their position, strengths, or market approach.\n"
-    "- If no competitors are directly mentioned, infer logical ones based on context.\n\n"
-
-    "**6. Actionable Recommendations**\n"
-    "- Provide 5–7 strategic recommendations tailored for the Apollo team.\n"
-    "- Base these on insights from the articles.\n"
-    "- Each recommendation should be specific and supported by at least one cited source.\n\n"
-
-    "**7. Strategic Fit with Apollo**\n"
-    "- For each trend, risk, or opportunity, briefly explain how Apollo’s current direction aligns or where there may be gaps.\n"
-    "- Use bullet points to indicate strategic strengths and weaknesses.\n\n"
-
-    "**8. SWOT Analysis (optional but encouraged)**\n"
-    "- Include a SWOT table (Strengths, Weaknesses, Opportunities, Threats) if enough data is available from the sources.\n"
-    "- Use markdown formatting for the table.\n\n"
-
-    "**9. Sources**\n  --->   THESE MUST BE INCLUDED BECAUSE THE CONTENT SHOULD BE BACKED BY THESE WEBSITES\n"
-    "- Include a bulleted list of all articles used.\n"
-    "- Format as: `- [Article Title](https://example.com)`\n"
-    "- Mention a 1-line summary or what each source contributed.\n"
-    "- Include at least 5–10 relevant links if available.\n\n"
-
-    "### ✅ Formatting Guidelines:\n"
-    "- Use proper markdown syntax for headers, bullets, and links.\n"
-    "- Use subheadings and bolding to enhance scanability.\n"
-    "- Write in formal, professional, C-suite-friendly language.\n"
-    "- Ensure the entire output is easily copy-pasteable into a markdown report generator or previewer.\n\n"
-
-
-    # "### FORMAT INSTRUCTIONS:\n\n" 
-    # "To use the scraper:\n"
-    # "Thought: I need to extract full text from this article.\n"
-    # "Action: Read website content\n"
-    # "Action Input: {\"website_url\": \"https://example.com\"}\n\n"
-    # "To finish:\n"
-    # "Thought: I now can give a great answer\n"
-    # "Final Answer: [a list of scraped article content or structured summary]\n\n"
-    # "❗Always include 'Action:' or 'Final Answer:', or the system will fail."
-    
-    
-    "✅ Final output: A well-formatted, insight-rich **markdown report** that synthesizes all scraped content into a deliverable worthy of executive review and strategic planning."
-
-)
-,
-    expected_output=(
-        "A comprehensive, strategic market analysis report in markdown format."
+        "You are tasked with producing a comprehensive Market Intelligence Report "
+        "based on the full article content scraped from high-authority sources.\n\n"
+        "Instructions:\n"
+        "- Scrape the full content of each website URL provided in the input.\n"
+        "- Extract key trends, risks, and opportunities discussed across all sources.\n"
+        "- Structure the insights into a well-formatted markdown report.\n\n"
+        "### Expected Structure of the Markdown Report:\n\n"
+        "1. **Executive Summary**\n"
+        "   - A high-level summary for decision-makers summarizing the key insights.\n\n"
+        "2. **Market Trends**\n"
+        "   - List and describe key market trends with examples.\n"
+        "   - Format: `- **Trend Name**: Description`\n\n"
+        "3. **Risks**\n"
+        "   - Identify potential risks and describe their impact.\n"
+        "   - Format: `- **Risk Name**: Description`\n\n"
+        "4. **Opportunities**\n"
+        "   - Highlight growth opportunities with explanations.\n"
+        "   - Format: `- **Opportunity Name**: Description`\n\n"
+        "5. **Competitors**\n"
+        "   - List notable competitors and their strengths.\n"
+        "   - If no competitors are found, state: 'No competitors identified.'\n\n"
+        "6. **Actionable Recommendations**\n"
+        "   - Provide strategic recommendations based on the analysis.\n"
+        "   - Format: `- Recommendation`\n\n"
+        "7. **Sources**\n"
+        "   - Include a bulleted list of all articles used, with titles and URLs.\n"
+        "   - Format: `- [Title](URL)`\n\n"
+        "### Formatting Guidelines:\n"
+        "- Use proper markdown syntax for headings and bullets.\n"
+        "- Maintain a formal and professional tone.\n"
+        "- Ensure clarity and conciseness for C-suite decision-makers.\n\n"
+        "Input: List of URLs retrieved from the previous task.\n"
+        "Output: A markdown-formatted market analysis report."
     ),
+    expected_output="A markdown-formatted market analysis report with the specified structure.",
     agent=news_scraper,
     context=[market_analysis_task],
-    output_file="output/analysis_report.md",
-    # human_input=True
+    output_file="output/analysis_report.md"
 )
+
+
+
+
+
+
 project_risk_assessment_task = Task(
     description=(
         # "You are responsible for conducting a comprehensive risk assessment of the Project report provided to you in the knowledge directory.\n\n"
@@ -388,11 +362,40 @@ final_integration_task = Task(
         "**5. References and Citations**\n"
         "- Include a bulleted list of all referenced documents and articles.\n"
         "- Format references with hyperlinks in markdown.\n\n"
+        "- include all the links that you have scraped"
     ),
     expected_output=(
-        "A comprehensive, professional-grade report in markdown or JSON format, structured as outlined above."
+        "A comprehensive, professional-grade report in markdown format, structured as outlined above."
         "Each section should be EXTREMLY ELABORATE and have proper well defined and well written paragraphs."
+        "it should have a table of contents."
+        "it should have a risk register table that contains the risks and the mitigation strategies with the respective goal and everything mentioned in the {description}."
+        "keep in mind that the report should be at least 1500 words."
+        "it should have all the reference links of the scraped websites"
         "Use the wordcount tool to ensure the report is at least 1500 words."
+        "Example structure: \n"
+        
+        "### ✅ Required Structure:\n"
+        "**1. Executive Summary**\n"
+        "- High-level summary of findings and actionable recommendations.\n\n"
+
+        "**2. Market Analysis**\n"
+        "- Major trends, opportunities, and risks identified in the news and scraped content.\n"
+        "- Data points or direct quotes with references where possible.\n\n"
+
+        "**3. Risk Register**\n"
+        "- Summarized risk analysis with clear categorization, likelihood, impact, and mitigation strategies.\n"
+        "- Include a markdown table or structured JSON format.\n\n"
+
+        "**4. Recommendations**\n"
+        "- Specific, actionable recommendations based on synthesized findings.\n"
+        "- Align these with the project's strategic goals and risks.\n\n"
+
+        "**5. References and Citations**\n"
+        "- Include a bulleted list of all referenced documents and articles.\n"
+        "- Format references with hyperlinks in markdown.\n\n"
+        "- include all the links that you have scraped"
+
+        "But you can make it more descriptive and more accurate from a business perspective"
     ),
     context=[
         document_query_task,

@@ -1,7 +1,6 @@
-from pydantic import BaseModel, Field, HttpUrl
-from typing import List, Optional, Dict, Union
+from pydantic import BaseModel, Field
 from typing import List, Optional
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 class Report(BaseModel):
     title: str = Field(..., description="The official title of the project report.")
     project_summary: str = Field(..., description="A brief summary of the project initiative.")
