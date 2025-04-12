@@ -2,27 +2,13 @@ from crewai import Task
 from models import Report,OrganicResult,SerperSearchResults
 from pydantic import BaseModel, Field
 from typing import List, Dict
-from agents import news_scraper, market_analysis, document_info_agent, risk_assessment_agent
-
+# from agents import news_scraper, market_analysis, document_info_agent, risk_assessment_agent
+from app import document_info_agent, market_analysis, news_scraper, risk_assessment_agent, final_integration_agent
 class NewsSearchResults(BaseModel):
     """Schema for the output of market analysis task."""
     query: str = Field(..., description="Search query used to find the news articles.")
     urls: List[str] = Field(..., description="List of URLs retrieved by the search tool.")
 
-
-# # Document Query Task
-# document_query_task=Task(
-#     description=(
-#         "Your task is to go through the provided document and extract relevant information "
-#         "according to the Report model schema."
-#     ),
-#     expected_output=(
-#         "A structured JSON data containing the project details according to the Report model schema."
-#     ),
-#     output_pydantic=Report,
-#     agent=document_info_agent,
-#     output_file="output/project_overview.json"
-# )
 document_query_task = Task(
     description=(
         "Your task is to analyze the provided document and extract all the relevant information "
@@ -67,24 +53,6 @@ market_analysis_task = Task(
     context=[document_query_task],
     output_file="output/market_analysis.json"
 )
-# You can create one like the others
-
-# class ArticleContent(BaseModel):
-#     """Schema for the output of analyze scraped content task."""
-#     url: str = Field(..., description="URL of the article.")
-#     title: str = Field(..., description="Title of the article.")
-#     snippet: str = Field(..., description="Short snippet or content summary of the article.")
-#     raw_content: str = Field(..., description="Full raw content of the article.")
-
-# class MarketAnalysisReport(BaseModel):
-#     """Schema for the report generated from scraped content."""
-#     executive_summary: str = Field(..., description="High-level summary for decision-makers.")
-#     market_trends: List[Dict[str, str]] = Field(..., description="Key market trends identified.")
-#     risks: List[Dict[str, str]] = Field(..., description="Risks discussed in the articles.")
-#     opportunities: List[Dict[str, str]] = Field(..., description="Opportunities inferred from the articles.")
-#     competitors: List[Dict[str, str]] = Field(..., description="Competitors mentioned in the articles.")
-#     actionable_recommendations: List[str] = Field(..., description="Strategic recommendations.")
-#     sources: List[str] = Field(..., description="Sources used to generate the report.")
 
 
 analyze_scraped_content_task = Task(
@@ -136,128 +104,6 @@ analyze_scraped_content_task = Task(
 
 project_risk_assessment_task = Task(
     description=(
-        # "You are responsible for conducting a comprehensive risk assessment of the Project report provided to you in the knowledge directory.\n\n"
-        # "You have the detailed project description containing architectural decisions, integration points, tooling dependencies, and development methodologies.\n\n"
-        # "Your analysis should be structured and thorough, covering all major risk categories. For each risk, assess its likelihood, impact, and propose mitigation strategies.\n\n"
-        # "Use the following framework:\n\n"
-        # "**1. Strategic Risks**\n"
-        # "- Misalignment with business goals\n"
-        # "- Scope creep or changing stakeholder priorities\n\n"
-        # "**2. Technical Risks**\n"
-        # "- API reliability or third-party service dependency (e.g., Stripe, Twilio)\n"
-        # "- Scalability and availability risks in cloud-native deployments\n"
-        # "- Performance under load, latency, and failure tolerance\n\n"
-        # "**3. Operational Risks**\n"
-        # "- Delayed procurement of critical tools (e.g., Figma, Datadog)\n"
-        # "- Skill shortages or bandwidth constraints in cross-functional teams\n"
-        # "- QA and compliance process delays\n\n"
-        # "**4. Resource & Financial Risks**\n"
-        # "- Overrun of $110K budget cap\n"
-        # "- Underestimation of resource requirements for CI/CD, DevOps, or UX testing\n\n"
-        # "**5. Organizational & Compliance Risks**\n"
-        # "- Lack of stakeholder involvement in key agile ceremonies\n"
-        # "- Changes to external regulations (e.g., GDPR, WCAG)\n\n"
-        # "**6. Assumptions & Constraints Validation**\n"
-        # "- Identify if any listed assumptions could break\n"
-        # "- Reevaluate the impact of stated constraints\n\n"
-        # "🔚 Your final output must be a full Risk Register with:\n"
-        # "- Risk Title\n"
-        # "- Risk Category\n"
-        # "-Likelihood (Low / Medium / High)\n"
-        # "- Impact (Low / Medium / High)\n"
-        # "- Mitigation Strategy\n"
-        # "- Residual Risk Level\n"
-        # "- Owner / Responsible Party (optional)\n"
-        
-#         """You are responsible for conducting a comprehensive risk assessment of the uploaded Project Report. 
-#     The report contains detailed project descriptions, including architectural decisions, integration points, 
-#     tooling dependencies, and development methodologies. Your analysis must be structured and thorough, 
-#     covering all major risk categories using the provided evaluation framework.
-
-#     Framework for Analysis:
-#     1. Strategic Risks:
-#        - Misalignment with business goals.
-#        - Scope creep or changing stakeholder priorities.
-  
-#   2. Technical Risks:
-#        - API reliability or third-party service dependency (e.g., Stripe, Twilio).
-#        - Scalability, availability, performance under load, latency, and failure tolerance risks in cloud-native deployments.
-
-#     3. Operational Risks:
-#        - Delayed procurement of critical tools (e.g., Figma, Datadog).
-#        - Skill shortages or bandwidth constraints in cross-functional teams.
-#        - QA and compliance process delays.
-
-#     4. Resource & Financial Risks:
-#        - Overrun of the $110K budget cap.
-#        - Underestimation of resource requirements for CI/CD, DevOps, or UX testing.
-
-#     5. Organizational & Compliance Risks:
-#        - Lack of stakeholder involvement in key agile ceremonies.
-#        - Changes to external regulations (e.g., GDPR, WCAG).
-
-#     6. Assumptions & Constraints Validation:
-#        - Identify risks tied to assumptions that could break.
-#        - Reevaluate the impact of stated constraints.
-
-#     7. Time and Budget Risks:
-#        - Assess potential time delays in the project schedule and their cascading impact on deliverables.
-#        - Evaluate risks related to exceeding the allocated project budget and implications for resource planning.
-
-#     Evaluation Criteria:
-#     - Risk Title
-#     - Risk Category
-#     - Likelihood (Low / Medium / High)
-#     - Impact (Low / Medium / High)
-#     - Mitigation Strategy
-#     - Residual Risk Level (Low / Medium / High)
-#     - Potential Time Delay (if applicable)
-#     - Potential Budget Overrun (if applicable)
-#     - Owner / Responsible Party (Optional)
-
-#     Risk Scoring System:
-#     - Low Risk: 0-3
-#     - Medium Risk: 4-6
-#     - High/Critical Risk: 7-10
-    
-    
-# #     take the context fromt"""
-#      """Conduct a comprehensive risk assessment **strictly grounded** in two sources:
-#         1. The official Project Report (provided as a PDFKnowledgeSource) in the knowledge directory.
-#         2. The previously generated market analysis findings
-
-#         You must not introduce any information not directly supported or implied in these two sources.
-#         Do not hallucinate or infer risks from general knowledge.
-
-#         Your analysis must follow this structured framework:
-
-#         1. Strategic Risks
-#         - Misalignment with business goals
-#         - Scope creep or shifting stakeholder priorities
-
-#         2. Technical Risks
-#         - Dependency on external APIs or services (e.g., Stripe, Twilio)
-#         - Scalability, uptime, and cloud-native system reliability
-#         - Performance under load, fault tolerance, and latency challenges
-
-#         3. Operational Risks
-#         - Procurement delays for key tools (e.g., Figma, Datadog)
-#         - Gaps in team skillsets or availability across cross-functional squads
-#         - QA bottlenecks or compliance hold-ups
-
-#         4. Resource & Financial Risks
-#         - Breaching the $110K budget cap
-#         - Underestimation of resourcing for CI/CD, security, or UX testing
-
-#         5. Organizational & Compliance Risks
-#         - Lack of stakeholder participation in agile ceremonies
-#         - Impact of changes in external regulations (GDPR, WCAG, etc.)
-
-#         6. Assumptions & Constraints Validation
-#         - Identify any assumptions that may no longer hold
-#         - Reevaluate the effect of stated budget/timeline constraints
-
-#         🚫 Avoid hypothetical risks. Ground every point in content from the project documentation or market research.
 
          "You are responsible for conducting a comprehensive risk assessment of a digital platform initiative.\n\n"
         "You will receive detailed input documents, including:\n"
@@ -426,6 +272,6 @@ final_integration_task = Task(
         project_risk_assessment_task,
     ],
     output_file="output/final_report.md",
-    agent=risk_assessment_agent,
+    agent=final_integration_agent,
 )
 
