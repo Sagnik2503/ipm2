@@ -1,31 +1,15 @@
 {
-    "news": [
-        {
-            "title": "Unpacking the Challenges Shaping Enterprise IT in 2025",
-            "link": "https://digitalisationworld.com/blogs/58242/unpacking-the-challenges-shaping-enterprise-it-in-2025",
-            "snippet": "Nearly 98% of IT leaders report struggles with scaling GenAI workloads from development to production, a challenge compounded by the growing need to modernise ...",
-            "date": "null",
-            "source": "digitalisationworld.com",
-            "imageUrl": "null",
-            "position": 1
-        },
-        {
-            "title": "Enterprise Application Development Challenges: Strategies for 2025",
-            "link": "https://www.netguru.com/blog/enterprise-app-development-challenges",
-            "snippet": "Issues like frequent business requirement changes, robust security demands, and efficient data storage complicate the process.",
-            "date": "null",
-            "source": "netguru.com",
-            "imageUrl": "null",
-            "position": 2
-        },
-        {
-            "title": "PostgreSQL Operator Joins CNCF Sandbox Stage - The New Stack",
-            "link": "https://thenewstack.io/postgresql-operator-cloudnativepg-hits-the-cncf-sandbox/",
-            "snippet": "EnterpriseDB's CloudNativePG, a Kubernetes operator for PostgreSQL, has been accepted into the CNCF sandbox, simplifying database management within Kubernetes ...",
-            "date": "null",
-            "source": "thenewstack.io",
-            "imageUrl": "null",
-            "position": 3
-        }
+    "query": "enterprise digital platform development using React, Redux, GraphQL, PostgreSQL, Stripe, Twilio, Segment, agile methodologies, cloud-native",
+    "urls": [
+        "https://www.pluralsight.com/courses/react-native-redux-graphql-building-apps",
+        "https://github.com/skays-dev/Complete-React-Developer-in-2023-w-Redux-Hooks-GraphQL-",
+        "https://medium.com/magnetis-backstage/react-native-redux-and-graphql-3b93af79d4ce",
+        "https://medium.com/react-weekly/implementing-graphql-in-your-redux-app-dad7acf39e1b",
+        "https://github.com/PCianes/FullStackOpen",
+        "https://github.com/phondani0/e_store",
+        "https://github.com/jtbrennan/Full-Stack-Open",
+        "https://dev.to/bnevilleoneill/how-to-create-a-react-native-app-with-postgresql-and-graphql-part-2-1i41",
+        "https://medium.com/nerd-for-tech/how-to-use-graphql-with-redux-50ad20ec051f",
+        "https://github.com/Souvikparua/COMPLETE-Fullstack-ecommerce-Responsive-MERN-App"
     ]
 }
