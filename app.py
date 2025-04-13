@@ -10,6 +10,9 @@ from typing import List
 from models import Report
 from dotenv import load_dotenv
 load_dotenv()
+import io
+import pandas as pd
+import re
 #the necessary imports above
 
 
@@ -18,7 +21,7 @@ load_dotenv()
 
 
 # Page configuration
-st.set_page_config(page_title="Document Analysis Crew", layout="wide")
+st.set_page_config(page_title="Risk Analysis Crew", layout="wide")
 
 # Setup directories
 KNOWLEDGE_DIR = Path("knowledge")
@@ -47,10 +50,19 @@ def setup_crew(pdf_name):
     llm = LLM(
     model=os.getenv("MODEL"),
     api_key=GEMINI_API_KEY,
-    temperature=0,
-    max_retries=3
+    temperature=0.3,
+    max_retries=3,
+    reasoning_effort="high"
     # stop=["###"]
 )
+    # llm1= LLM(
+    #     model="groq/gemma2-9b-it",
+    #     api_key=os.getenv("GROQ_API_KEY"),
+    #     temperature=0,
+    #     max_retries=3,
+    #     reasoning_effort="high",
+    #     # max_tokens=6000,
+    # )
 
     #agents below
     # Document Info Agent
@@ -90,7 +102,8 @@ def setup_crew(pdf_name):
     ),
     verbose=True,
     tools=[TavilySearchTool()],
-    max_rpm=30
+    max_rpm=30,
+    # llm=llm1,
 )
 # 🕸 Web Scraper Agent (scrapes full content)
     
@@ -105,7 +118,8 @@ def setup_crew(pdf_name):
     ),
     verbose=True,
     tools=[TavilyScrapeTool()],
-    max_rpm=30
+    max_rpm=30,
+    # llm=llm1,
 )
     risk_assessment_agent = Agent(
     cache=False,
@@ -484,15 +498,53 @@ def clear_output_files():
 def display_markdown_report(file_path, title):
     """Display markdown report with scrollable container"""
     if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            content = f.read()
-            st.markdown(f"{title}")
-            st.markdown(content)
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                st.markdown(f"{title}")
+
+                # Special handling for risk register
+                if "risk_register.md" in file_path:
+                    try:
+                        # Parse markdown table to pandas dataframe
+
+                        # Extract the table content
+                        table_content = content
+                        # Remove any text after the table
+                        if "No risks identified" in content:
+                            footer_text = content.split("No risks identified")[1]
+                            table_content = content.split("No risks identified")[0]
+
+                        # Parse markdown table to DataFrame
+                        df = pd.read_csv(io.StringIO(re.sub(r'\|---+', '|---', table_content)), sep='|',
+                                         skipinitialspace=True)
+                        df = df.iloc[:, 1:-1]  # Remove empty first and last columns from markdown table format
+
+                        # Display as interactive dataframe
+                        st.dataframe(df, use_container_width=True, height=500)
+
+                        # Add the footer text if it exists
+                        if "No risks identified" in content:
+                            st.markdown(f"No risks identified in the Strategic category due to insufficient input data.")
+                    except Exception as e:
+                        # Fall back to regular markdown display if parsing fails
+                        st.markdown(content)
+                else:
+                    # For other reports, use the scrollable container
+                    st.markdown(
+                        f'<div style="height: 1000px; overflow-y: scroll; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">{content}</div>',
+                        unsafe_allow_html=True
+                    )
+        except Exception as e:
+            st.error(f"Error reading file {file_path}: {e}")
     else:
         st.warning(f"{title} not found.")
+
         
 def main():
-    st.title("📄 Upload PDF and Run Crew")
+    st.title("📄 Business Risk Report Generator")
+    st.subheader("Upload a PDF and generate a comprehensive risk report.")
+    st.write("This tool analyzes the uploaded PDF and generates a detailed risk report, including market analysis, risk register, and final report.")
     # Clear existing files in the knowledge directory
     for file in KNOWLEDGE_DIR.iterdir():
         if file.is_file():
