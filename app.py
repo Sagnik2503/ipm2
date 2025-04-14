@@ -55,14 +55,6 @@ def setup_crew(pdf_name):
     reasoning_effort="high"
     # stop=["###"]
 )
-    # llm1= LLM(
-    #     model="groq/gemma2-9b-it",
-    #     api_key=os.getenv("GROQ_API_KEY"),
-    #     temperature=0,
-    #     max_retries=3,
-    #     reasoning_effort="high",
-    #     # max_tokens=6000,
-    # )
 
     #agents below
     # Document Info Agent
@@ -156,7 +148,7 @@ def setup_crew(pdf_name):
         "you excel at delivering reports that empower stakeholders to make informed decisions."
     ),
     verbose=True,
-    llm=llm,  # Replace with your LLM configuration, e.g., OpenAI, Anthropic, etc.
+    llm=llm,  
     tools=[WordCounterTool()],  # Add any necessary tools, if needed
 )
 
