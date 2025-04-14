@@ -1,14 +1,15 @@
 from crewai.tools import BaseTool
-from typing import Type, List, Union
+from typing import Type, List, Union, Dict, Any
 from pydantic import BaseModel, Field
 import asyncio
 import time
+import json
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 
 # Enhanced Input Schema for URLScraperTool
 class URLScraperToolInput(BaseModel):
     """Input schema for URLScraperTool."""
-    urls: Union[List[str], str] = Field(..., description="URL or list of URLs to crawl.")
+    urls: Union[List[str], str, Dict[str, Any]] = Field(..., description="URL or list of URLs to crawl, or a JSON object with 'urls' key.")
     max_concurrent: int = Field(default=3, description="Maximum number of concurrent crawl operations.")
 
 # Enhanced URL Scraper Tool for your workflow
@@ -19,11 +20,25 @@ class URLScraperTool(BaseTool):
     )
     args_schema: Type[BaseModel] = URLScraperToolInput
     
-    async def _run(self, urls: Union[List[str], str], max_concurrent: int = 3) -> str:
+    async def _run(self, urls: Union[List[str], str, Dict[str, Any]], max_concurrent: int = 3) -> str:
         """Main execution method to crawl URLs and scrape content."""
         
+        # Handle dictionary format from market analysis agent
+        if isinstance(urls, dict) and "urls" in urls:
+            urls = urls["urls"]
+        # Handle JSON string format
+        elif isinstance(urls, str):
+            try:
+                parsed_data = json.loads(urls)
+                if isinstance(parsed_data, dict) and "urls" in parsed_data:
+                    urls = parsed_data["urls"]
+                elif isinstance(parsed_data, list):
+                    urls = parsed_data
+            except json.JSONDecodeError:
+                # If not valid JSON, treat as a single URL
+                urls = [urls]
         # Ensure URLs is a list
-        if isinstance(urls, str):
+        if not isinstance(urls, list):
             urls = [urls]
             
         if not urls:
@@ -127,19 +142,35 @@ async def main():
         "https://github.com/graphile/starter"
     ]
     
+    # Test with market analysis format
+    test_market_analysis = {
+        "query": "enterprise platform agile development React GraphQL PostgreSQL Kubernetes deployment",
+        "urls": [
+            "https://www.enterprisedb.com/use-case/microservices-and-kubernetes",
+            "https://github.com/graphile/starter"
+        ]
+    }
+    
     # Max concurrent crawls for testing
     max_concurrent = 3
     
     # Initialize the scraper tool
     scraper_tool = URLScraperTool()
 
-    # Run the scraper tool and await the result
-    print("Running scraper tool...")
-    result = await scraper_tool._run(urls=test_urls, max_concurrent=max_concurrent)
+    # Run the scraper tool with URLs list
+    print("Running scraper tool with direct URLs...")
+    result1 = await scraper_tool._run(urls=test_urls, max_concurrent=max_concurrent)
     
-    # Output the final result
-    print("\n=== FINAL CRAWL RESULT ===")
-    print(result)
+    # Run the scraper tool with market analysis format
+    print("\nRunning scraper tool with market analysis format...")
+    result2 = await scraper_tool._run(urls=test_market_analysis, max_concurrent=max_concurrent)
+    
+    # Output the final results
+    print("\n=== RESULT FROM DIRECT URLS ===")
+    print(result1[:500] + "...")  # Print first 500 chars to avoid overwhelming output
+    
+    print("\n=== RESULT FROM MARKET ANALYSIS FORMAT ===")
+    print(result2[:500] + "...")  # Print first 500 chars to avoid overwhelming output
 
 if __name__ == "__main__":
     # Run the test locally using asyncio

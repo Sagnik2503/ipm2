@@ -3,7 +3,10 @@ import os
 from pathlib import Path
 from crewai import Crew, Process, Agent, Task, LLM
 from crewai.knowledge.source.pdf_knowledge_source import PDFKnowledgeSource
+from crewai_tools import ScrapeWebsiteTool
 from tools.testtool import TavilySearchTool, TavilyScrapeTool
+from tools.crawl import URLScraperTool
+from tools.serper_news import SerperNewsTool
 from tools.word_count import WordCounterTool
 from pydantic import BaseModel, Field
 from typing import List
@@ -30,11 +33,22 @@ KNOWLEDGE_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
-class NewsSearchResults(BaseModel):
-    """Schema for the output of market analysis task."""
-    query: str = Field(..., description="Search query used to find the news articles.")
-    urls: List[str] = Field(..., description="List of URLs retrieved by the search tool.")
+# class NewsSearchResults(BaseModel):
+#     """Schema for the output of the news or market analysis search task.
+#     This structure is optimized for direct input into recursive scraping tools.
+#     """
+#     urls: List[str] = Field(
+#         ..., 
+#         description="Flat list of fully qualified URLs to be recursively scraped."
+#     )
 
+class NewsSearchResults(BaseModel):
+    query: str = Field(..., description="Original query used for search.")
+    urls: List[str] = Field(..., description="Flat list of URLs for scraping.")
+
+    def for_scraper(self) -> List[str]:
+        """Utility to extract just the list of URLs for scraping tools."""
+        return self.urls
 
 
 
@@ -101,7 +115,7 @@ def setup_crew(pdf_name):
         "You specialize in leveraging real-time news data to provide informed strategic recommendations."
     ),
     verbose=True,
-    tools=[TavilySearchTool()],
+    tools=[SerperNewsTool()],
     max_rpm=30,
     # llm=llm1,
 )
@@ -157,7 +171,7 @@ def setup_crew(pdf_name):
     ),
     verbose=True,
     llm=llm,  # Replace with your LLM configuration, e.g., OpenAI, Anthropic, etc.
-    tools=[WordCounterTool()],  # Add any necessary tools, if needed
+    # tools=[WordCounterTool()],  # Add any necessary tools, if needed
 )
 
     #Tasks below
@@ -192,7 +206,7 @@ def setup_crew(pdf_name):
     description=(
         "You are a market analyst performing research on a specific project.\n\n"
         "Your job is to analyze the latest market news, risks, and opportunities relevant to the project summary provided below.\n"
-        "To do this, you must use the 'TavilySearchTool', which retrieves the most recent news articles.\n\n"
+        "To do this, you must use the 'SerperNewsTool', which retrieves the most recent news articles.\n\n"
         "Instructions:\n"
         "1. Convert the project description into a concise, relevant search query.\n"
         "2. Call the `TavilySearchTool` using the query. Example input: `query='AI startup in healthcare'`.\n"
@@ -201,49 +215,65 @@ def setup_crew(pdf_name):
         "Project Summary:\n"
         "{document_query_task}"
     ),
-    expected_output="A structured JSON containing the search query and URLs for further analysis.",
-    output_pydantic=NewsSearchResults,
+    expected_output="A structured JSON containing ONLY the LIST of URLs for further analysis.",
+    # output_pydantic=NewsSearchResults,
     agent=market_analysis,
     context=[document_query_task],
-    output_file="output/market_analysis.json"
+    output_file="output/market_analysis.json",
+    output_key="urls"
 )
 
 
     analyze_scraped_content_task = Task(
     description=(
-        "You are tasked with producing a comprehensive Market Intelligence Report "
-        "based on the full article content scraped from high-authority sources.\n\n"
-        "Instructions:\n"
-        "- Scrape the full content of each website URL provided in the input.\n"
-        "- Extract key trends, risks, and opportunities discussed across all sources.\n"
-        "- Structure the insights into a well-formatted markdown report.\n\n"
-        "### Expected Structure of the Markdown Report:\n\n"
-        "1. **Executive Summary**\n"
-        "   - A high-level summary for decision-makers summarizing the key insights.\n\n"
-        "2. **Market Trends**\n"
-        "   - List and describe key market trends with examples.\n"
-        "   - Format: `- **Trend Name**: Description`\n\n"
-        "3. **Risks**\n"
-        "   - Identify potential risks and describe their impact.\n"
-        "   - Format: `- **Risk Name**: Description`\n\n"
-        "4. **Opportunities**\n"
-        "   - Highlight growth opportunities with explanations.\n"
-        "   - Format: `- **Opportunity Name**: Description`\n\n"
-        "5. **Competitors**\n"
-        "   - List notable competitors and their strengths.\n"
-        "   - If no competitors are found, state: 'No competitors identified.'\n\n"
-        "6. **Actionable Recommendations**\n"
-        "   - Provide strategic recommendations based on the analysis.\n"
-        "   - Format: `- Recommendation`\n\n"
-        "7. **Sources**\n"
-        "   - Include a bulleted list of all articles used, with titles and URLs.\n"
-        "   - Format: `- [Title](URL)`\n\n"
-        "### Formatting Guidelines:\n"
-        "- Use proper markdown syntax for headings and bullets.\n"
-        "- Maintain a formal and professional tone.\n"
-        "- Ensure clarity and conciseness for C-suite decision-makers.\n\n"
-        "Input: List of URLs retrieved from the previous task.\n"
-        "Output: A markdown-formatted market analysis report."
+        """
+        You are tasked with producing a comprehensive Market Intelligence Report by
+  recursively scraping the full article content from all high-authority sources.
+
+  Instructions:
+  - Extract all URLs from the input list provided to you. If the input includes nested
+    or embedded links (e.g., inside pages or redirects), include those as well.
+  - Use the CrewAI ScrapeWebsiteTool to scrape all discovered URLs recursively.
+  - Analyze the content to identify and extract key market trends, potential risks,
+    emerging opportunities, and notable competitors.
+  - Structure the insights into a professional, well-formatted markdown report.
+
+  ### Expected Structure of the Markdown Report:
+
+  1. **Executive Summary**
+     - A high-level summary for decision-makers summarizing the key insights.
+
+  2. **Market Trends**
+     - List and describe key market trends with examples.
+     - Format: - **Trend Name**: Description
+
+  3. **Risks**
+     - Identify potential risks and describe their impact.
+     - Format: - **Risk Name**: Description
+
+  4. **Opportunities**
+     - Highlight growth opportunities with explanations.
+     - Format: - **Opportunity Name**: Description
+
+  5. **Competitors**
+     - List notable competitors and their strengths.
+     - If no competitors are found, state: 'No competitors identified.'
+
+  6. **Actionable Recommendations**
+     - Provide strategic recommendations based on the analysis.
+     - Format: - Recommendation
+
+  7. **Sources**
+     - Include a bulleted list of all articles used, with titles and URLs.
+     - Format: - [Title](URL)
+
+  ### Formatting Guidelines:
+  - Use proper markdown syntax for headings and bullets.
+  - Maintain a formal and professional tone.
+  - Ensure clarity and conciseness for C-suite decision-makers.
+  
+  Note that the input is a list of URLs retrieved from the previous task.
+  """
     ),
     expected_output="A markdown-formatted market analysis report with the specified structure. also contain the links that you have scraped",
     agent=news_scraper,
@@ -340,7 +370,7 @@ def setup_crew(pdf_name):
 
 
     ),
-    context=[analyze_scraped_content_task],
+    context=[analyze_scraped_content_task, document_query_task],
     output_file="output/risk_register.md",
     #human_input=True,
     agent=risk_assessment_agent
@@ -391,9 +421,9 @@ def setup_crew(pdf_name):
         "Each section should be EXTREMLY ELABORATE and have proper well defined and well written paragraphs."
         "it should have a table of contents."
         "it should have a risk register table that contains the risks and the mitigation strategies with the respective goal and everything mentioned in the {description}."
-        "**keep in mind that the report should be at least 1500 words.**"
+        "**keep in mind that the report should be at least 0500 words.**"
         "it should have all the reference links of the scraped websites"
-        "**Use the Word Count Tool to ensure the report is at least 1500 words.**"
+    
         "Example structure: \n"
         
         "### ✅ Required Structure:\n"
@@ -531,10 +561,7 @@ def display_markdown_report(file_path, title):
                         st.markdown(content)
                 else:
                     # For other reports, use the scrollable container
-                    st.markdown(
-                        f'<div style="height: 1000px; overflow-y: scroll; padding: 20px; border: 1px solid #ccc; border-radius: 5px;">{content}</div>',
-                        unsafe_allow_html=True
-                    )
+                    st.markdown(content)
         except Exception as e:
             st.error(f"Error reading file {file_path}: {e}")
     else:

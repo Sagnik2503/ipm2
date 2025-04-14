@@ -1,223 +1,21 @@
-# import os
-# from typing import Type, List, Dict
-# from pydantic import BaseModel, Field
-# from crewai.tools import BaseTool
-# from langchain_tavily import TavilySearch
-
-
-# class TavilyScrapeToolInput(BaseModel):
-#     """Input schema for TavilyScrapeTool."""
-#     urls: List[str] = Field(..., description="A list of URLs to scrape content from.")
-
-
-# class TavilyScrapeTool(BaseTool):
-#     name: str = "Tavily Website Scraper"
-#     description: str = (
-#         "Uses the TavilySearch tool to scrape content from a list of provided URLs. "
-#         "Returns the title, URL, content snippet, and raw content for each webpage."
-#     )
-#     args_schema: Type[BaseModel] = TavilyScrapeToolInput
-
-#     def _run(self, urls: List[str]) -> List[Dict[str, str]]:
-#         """
-#         Scrapes content from the provided list of URLs.
-
-#         Args:
-#             urls (list): A list of URLs to scrape.
-
-#         Returns:
-#             list[dict]: A list of dictionaries with the scraped content.
-#         """
-#         if not urls:
-#             return [{"error": "No URLs provided for scraping."}]
-
-#         # Initialize Tavily Search Tool
-#         tavily_tool = TavilySearch(
-#             api_key=os.getenv("TAVILY_API_KEY"),
-#             max_results=5,
-#             topic="general",
-#             include_raw_content=True
-#         )
-
-#         scraped_results = []
-
-#         for url in urls:
-#             try:
-#                 # Perform the search with the URL as a query
-#                 response = tavily_tool.invoke({"query": url})
-#                 results = response.get("results", [])
-
-#                 if not results:
-#                     scraped_results.append({"url": url, "message": "No content found."})
-#                     continue
-
-#                 # Append the results for each URL
-#                 for result in results:
-#                     scraped_results.append({
-#                         "url": url,
-#                         "title": result.get("title", "No Title"),
-#                         "link": result.get("url", "No Link"),
-#                         "snippet": result.get("content", "No Snippet"),
-#                         "raw_content": result.get("raw_content", "No Raw Content"),
-#                     })
-#             except Exception as e:
-#                 scraped_results.append({"url": url, "error": str(e)})
-
-#         return scraped_results
-
-
-# # ✅ MAIN FUNCTION FOR TESTING
-# if __name__ == "__main__":
-#     # Ensure the Tavily API key is set
-#     if not os.getenv("TAVILY_API_KEY"):
-#         raise ValueError("⚠️ TAVILY_API_KEY not found in environment. Please set it in your .env file.")
-
-#     # Create an instance of the tool
-#     scraper_tool = TavilyScrapeTool()
-
-#     # Define your test input
-#     test_urls = [
-#         "https://example.com",
-#         "https://www.wikipedia.org",
-#         "https://www.openai.com"
-#     ]
-
-#     # Run the tool with the input
-#     print("\n🔍 Scraping content for URLs:\n")
-#     result = scraper_tool._run(urls=test_urls)
-
-#     # Display results
-#     print("📰 Returned Results:\n")
-#     print(result)
-#     print("\n📦 Type of returned data:", type(result))
-
-
-#Try 2
-# import os
-# from dotenv import load_dotenv
-# from typing import Type, List, Dict
-# from pydantic import BaseModel, Field
-# from crewai.tools import BaseTool
-# from langchain_tavily import TavilySearch
-
-# # Load environment variables
-# load_dotenv()
-
-# class TavilySearchAndScrapeToolInput(BaseModel):
-#     """Input schema for TavilySearchAndScrapeTool."""
-#     query: str = Field(..., description="Search query to find relevant URLs.")
-#     num_results: int = Field(10, description="Number of URLs to retrieve and scrape.")
-
-# class TavilySearchAndScrapeTool(BaseTool):
-#     name: str = "Tavily Search and Scrape Tool"
-#     description: str = (
-#         "Uses TavilySearch to search for URLs based on a query and then scrapes content "
-#         "from the retrieved URLs. Returns detailed information about the scraped content."
-#     )
-#     args_schema: Type[BaseModel] = TavilySearchAndScrapeToolInput
-
-#     def _run(self, query: str, num_results: int = 10) -> List[Dict[str, str]]:
-#         """
-#         Searches for URLs based on the query and scrapes the retrieved URLs for content.
-
-#         Args:
-#             query (str): The search query.
-#             num_results (int): The number of URLs to scrape.
-
-#         Returns:
-#             list[dict]: A list of dictionaries with search and scrape results.
-#         """
-#         if not query:
-#             return [{"error": "No query provided for search."}]
-
-#         # Initialize Tavily Search Tool
-#         tavily_tool = TavilySearch(
-#             api_key=os.getenv("TAVILY_API_KEY"),
-#             max_results=num_results,
-#             topic="general",
-#             include_raw_content=True
-#         )
-
-#         # Step 1: Search for URLs using TavilySearch
-#         try:
-#             search_response = tavily_tool.invoke({"query": query})
-#             search_results = search_response.get("results", [])
-#         except Exception as e:
-#             return [{"error": f"Search failed with error: {str(e)}"}]
-
-#         if not search_results:
-#             return [{"error": "No search results found for the query."}]
-
-#         # Extract URLs from search results
-#         urls_to_scrape = [result.get("url") for result in search_results if result.get("url")]
-
-#         if not urls_to_scrape:
-#             return [{"error": "No valid URLs found to scrape."}]
-
-#         # Step 2: Scrape content from the retrieved URLs using TavilySearch
-#         scraped_results = []
-#         for url in urls_to_scrape:
-#             try:
-#                 # Perform scraping with the URL
-#                 response = tavily_tool.invoke({"query": url})
-#                 results = response.get("results", [])
-
-#                 if not results:
-#                     scraped_results.append({"url": url, "message": "No content found."})
-#                     continue
-
-#                 # Append the results for each URL
-#                 for result in results:
-#                     scraped_results.append({
-#                         "searched_url": url,
-#                         "title": result.get("title", "No Title"),
-#                         "link": result.get("url", "No Link"),
-#                         "snippet": result.get("content", "No Snippet"),
-#                         "raw_content": result.get("raw_content", "No Raw Content"),
-#                     })
-#             except Exception as e:
-#                 scraped_results.append({"url": url, "error": str(e)})
-
-#         return scraped_results
-
-
-# # ✅ MAIN FUNCTION FOR TESTING
-# if __name__ == "__main__":
-#     # Ensure the Tavily API key is set
-#     if not os.getenv("TAVILY_API_KEY"):
-#         raise ValueError("⚠️ TAVILY_API_KEY not found in environment. Please set it in your .env file.")
-
-#     # Create an instance of the tool
-#     search_and_scrape_tool = TavilySearchAndScrapeTool()
-
-#     # Define your test input
-#     test_query = "Artificial Intelligence trends"
-#     num_results = 5
-
-#     # Run the tool with the input
-#     print(f"\n🔍 Searching and Scraping for: {test_query}\n")
-#     result = search_and_scrape_tool._run(query=test_query, num_results=num_results)
-
-#     # Display results
-#     print("📰 Returned Results:\n")
-#     print(result)
-#     print("\n📦 Type of returned data:", type(result))
-
-
-# Try 3
-
 import os
+import json
+import requests
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from typing import Type, List, Dict
+from typing import Type, List, Dict, Union, Optional
 from crewai.tools import BaseTool
-from langchain_tavily import TavilySearch
+from langchain_community.tools.tavily_search import TavilySearchResults
+import time
+import random
+from urllib.parse import urlparse
 
 # Load environment variables
 load_dotenv()
 
 # -----------------------------------------
-# Tavily Search Tool
+# Tavily Search Tool (URL List Only)
 # -----------------------------------------
 
 class TavilySearchToolInput(BaseModel):
@@ -229,11 +27,11 @@ class TavilySearchTool(BaseTool):
     name: str = "Tavily Search Tool"
     description: str = (
         "Uses TavilySearch to find relevant URLs based on a query. "
-        "Returns a list of URLs and related metadata."
+        "Returns only a flat list of URLs."
     )
     args_schema: Type[BaseModel] = TavilySearchToolInput
 
-    def _run(self, query: str, num_results: int = 10) -> List[Dict[str, str]]:
+    def _run(self, query: str, num_results: int = 10) -> List[str]:
         """
         Searches for URLs based on the query.
 
@@ -242,100 +40,168 @@ class TavilySearchTool(BaseTool):
             num_results (int): The number of URLs to retrieve.
 
         Returns:
-            list[dict]: A list of dictionaries with search results.
+            list[str]: A flat list of URLs.
         """
         if not query:
-            return [{"error": "No query provided for search."}]
+            return []
 
         # Initialize Tavily Search Tool
-        tavily_tool = TavilySearch(
-            api_key=os.getenv("TAVILY_API_KEY"),
-            max_results=num_results,
-            topic="general",
-            include_raw_content=False  # Not needed for search-only
-        )
+        tavily_tool = TavilySearchResults(api_key=os.getenv("TAVILY_API_KEY"))
 
         try:
             # Perform the search
-            response = tavily_tool.invoke({"query": query})
-            search_results = response.get("results", [])
+            response = tavily_tool.invoke({"query": query, "max_results": num_results})
+            if not response:
+                return []
 
-            if not search_results:
-                return [{"error": "No search results found for the query."}]
-
-            # Extract URLs and metadata
-            return [
-                {"title": result.get("title", "No Title"), "url": result.get("url", "No URL")}
-                for result in search_results
-            ]
+            # Return only URLs
+            return [result.get("url") for result in response if result.get("url")]
         except Exception as e:
-            return [{"error": f"Search failed with error: {str(e)}"}]
+            return [f"Error: {str(e)}"]
+
 
 # -----------------------------------------
-# Tavily Scrape Tool
+# Advanced Web Scraper Tool
 # -----------------------------------------
 
-class TavilyScrapeToolInput(BaseModel):
-    """Input schema for TavilyScrapeTool."""
-    urls: List[str] = Field(..., description="A list of URLs to scrape content from.")
+import json
+import random
+import time
+from typing import List, Union, Dict, Set, Type
+from urllib.parse import urlparse, urljoin
+
+import requests
+from bs4 import BeautifulSoup
+from pydantic import BaseModel, Field
+from crewai.tools import BaseTool
+
+
+class RecursiveWebScraperToolInput(BaseModel):
+    urls: List[str] = Field(..., description="A list of starting URLs to scrape content recursively from.")
+    max_depth: int = Field(1, description="Depth of recursive scraping. Depth=0 means only the initial page.")
+
 
 class TavilyScrapeTool(BaseTool):
-    name: str = "Tavily Scrape Tool"
+    name: str = "Recursive Web Scraper Tool"
     description: str = (
-        "Uses TavilySearch to scrape content from a list of provided URLs. "
-        "Returns the title, URL, content snippet, and raw content for each webpage."
+        "Recursively scrapes content from a list of URLs. "
+        "Follows internal links up to a specified depth. "
+        "Returns a list of dictionaries with title, URL, and content."
     )
-    args_schema: Type[BaseModel] = TavilyScrapeToolInput
+    args_schema: Type[BaseModel] = RecursiveWebScraperToolInput
 
-    def _run(self, urls: List[str]) -> List[Dict[str, str]]:
-        """
-        Scrapes content from the provided list of URLs.
+    def __init__(self):
+        super().__init__()
+        self._headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                          '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        self._visited: Set[str] = set()
 
-        Args:
-            urls (list): A list of URLs to scrape.
+    def _extract_content(self, url: str) -> Dict[str, str]:
+        try:
+            time.sleep(random.uniform(1, 2))
+            response = requests.get(url, headers=self._headers, timeout=10)
+            response.raise_for_status()
 
-        Returns:
-            list[dict]: A list of dictionaries with the scraped content.
-        """
-        if not urls:
-            return [{"error": "No URLs provided for scraping."}]
+            soup = BeautifulSoup(response.text, 'html.parser')
+            title = soup.title.string.strip() if soup.title else "No Title"
 
-        # Initialize Tavily Search Tool
-        tavily_tool = TavilySearch(
-            api_key=os.getenv("TAVILY_API_KEY"),
-            max_results=5,
-            topic="general",
-            include_raw_content=True
-        )
+            for tag in soup(["script", "style", "header", "footer", "nav", "form", "noscript"]):
+                tag.decompose()
 
-        scraped_results = []
+            selectors = ["main", "article", "#content", ".content", ".post", ".article"]
+            content_area = next((soup.select_one(sel) for sel in selectors if soup.select_one(sel)), soup.body)
+
+            content = content_area.get_text(separator="\n\n", strip=True) if content_area else "No Content Available"
+
+            return {
+                "url": url,
+                "title": title,
+                "content": content,
+                "domain": urlparse(url).netloc
+            }
+
+        except Exception as e:
+            return {
+                "url": url,
+                "title": "Error",
+                "error": str(e),
+                "content": "No Content Available",
+                "domain": urlparse(url).netloc if url else "unknown"
+            }
+
+    def _get_internal_links(self, soup: BeautifulSoup, base_url: str) -> List[str]:
+        domain = urlparse(base_url).netloc
+        internal_links = set()
+
+        for link_tag in soup.find_all("a", href=True):
+            href = link_tag["href"]
+            full_url = urljoin(base_url, href)
+            parsed_url = urlparse(full_url)
+            if parsed_url.netloc == domain and full_url not in self._visited:
+                internal_links.add(full_url)
+
+        return list(internal_links)
+
+    def _crawl(self, url: str, depth: int) -> List[Dict[str, str]]:
+        if url in self._visited or depth < 0:
+            return []
+
+        self._visited.add(url)
+        result = []
+
+        try:
+            time.sleep(random.uniform(1, 2))
+            response = requests.get(url, headers=self._headers, timeout=10)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            title = soup.title.string.strip() if soup.title else "No Title"
+
+            for tag in soup(["script", "style", "header", "footer", "nav", "form", "noscript"]):
+                tag.decompose()
+
+            content_area = next((soup.select_one(sel) for sel in ["main", "article", "#content", ".content", ".post", ".article"]
+                                if soup.select_one(sel)), soup.body)
+
+            content = content_area.get_text(separator="\n\n", strip=True) if content_area else "No Content Available"
+
+            result.append({
+                "url": url,
+                "title": title,
+                "content": content,
+                "domain": urlparse(url).netloc
+            })
+
+            if depth > 0:
+                links = self._get_internal_links(soup, url)
+                for link in links:
+                    result.extend(self._crawl(link, depth - 1))
+
+        except Exception as e:
+            result.append({
+                "url": url,
+                "title": "Error",
+                "error": str(e),
+                "content": "No Content Available",
+                "domain": urlparse(url).netloc if url else "unknown"
+            })
+
+        return result
+
+    def _run(self, urls: List[str], max_depth: int = 1) -> List[Dict[str, str]]:
+        self._visited = set()  # Reset visited for each run
+        all_results = []
 
         for url in urls:
-            try:
-                # Perform scraping with the URL
-                response = tavily_tool.invoke({"query": url})
-                results = response.get("results", [])
+            if isinstance(url, str) and url.strip():
+                all_results.extend(self._crawl(url.strip(), max_depth))
 
-                if not results:
-                    scraped_results.append({"url": url, "message": "No content found."})
-                    continue
+        return all_results
 
-                # Append the results for each URL
-                for result in results:
-                    scraped_results.append({
-                        "url": url,
-                        "title": result.get("title", "No Title"),
-                        "snippet": result.get("content", "No Snippet"),
-                        "raw_content": result.get("raw_content", "No Raw Content"),
-                    })
-            except Exception as e:
-                scraped_results.append({"url": url, "error": str(e)})
 
-        return scraped_results
 
-# -----------------------------------------
-# Test Script
-# -----------------------------------------
 
 if __name__ == "__main__":
     # Ensure the Tavily API key is set
@@ -350,11 +216,29 @@ if __name__ == "__main__":
     print("\n🔍 Search Results:\n")
     print(search_results)
 
-    # Step 2: Test the Scrape Tool (using URLs from search results)
-    if isinstance(search_results, list) and "url" in search_results[0]:
-        urls_to_scrape = [result["url"] for result in search_results]
-        scrape_tool = TavilyScrapeTool()
-        scrape_results = scrape_tool._run(urls=urls_to_scrape)
-
-        print("\n📰 Scraped Results:\n")
-        print(scrape_results)
+    # Step 2: Test the Web Scraper Tool
+    if search_results:
+        # Test with direct list of URLs
+        scraper_tool = TavilyScrapeTool()
+        scrape_results = scraper_tool._run(urls=search_results[:2])  # Just use first 2 URLs for testing
+        
+        print("\n📰 Scraped Results (direct URLs):\n")
+        for result in scrape_results:
+            print(f"URL: {result['url']}")
+            print(f"Title: {result['title']}")
+            print(f"Content Preview: {result['content'][:150]}...")
+            print("-" * 50)
+        
+        # Test with JSON format that mimics your market analysis agent output
+        test_json = json.dumps({
+            "query": "test query",
+            "urls": search_results[:2]
+        })
+        scrape_results_json = scraper_tool._run(urls=test_json)
+        
+        print("\n📰 Scraped Results (JSON input):\n")
+        for result in scrape_results_json:
+            print(f"URL: {result['url']}")
+            print(f"Title: {result['title']}")
+            print(f"Content Preview: {result['content'][:150]}...")
+            print("-" * 50)
